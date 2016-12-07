@@ -23,7 +23,7 @@ deploy_dev:
   when: manual
   script:
     # package
-    - mvn clean package -Dmaven.test.skip=true
+    - mvn clean package -Dmaven.test.skip=true -Pdev
     # write docker file
     - cd /$CI_PROJECT_DIR/$PACKAGE_PATH
     - echo "FROM tomcat:jre8" > dockerfile
@@ -52,7 +52,7 @@ deploy_prd:
   when: manual
   script:
     # package
-    - mvn clean package -Dmaven.test.skip=true
+    - mvn clean package -Dmaven.test.skip=true -Pprd
     # build docker image
     - cd /$CI_PROJECT_DIR/$PACKAGE_PATH
     - echo "FROM tomcat:jre8" > dockerfile
