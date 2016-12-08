@@ -27,6 +27,7 @@ deploy_dev:
     # write docker file
     - cd /$CI_PROJECT_DIR/$PACKAGE_PATH
     - echo "FROM tomcat:jre8" > dockerfile
+    - echo "RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime" >> dockerfile
     - echo "RUN rm -rf /usr/local/tomcat/webapps/*" >> dockerfile
     - echo "COPY $PACKAGE_NAME /usr/local/tomcat/webapps" >> dockerfile
     # run common deploy shell
@@ -56,6 +57,7 @@ deploy_prd:
     # build docker image
     - cd /$CI_PROJECT_DIR/$PACKAGE_PATH
     - echo "FROM tomcat:jre8" > dockerfile
+    - echo "RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime" >> dockerfile
     - echo "RUN rm -rf /usr/local/tomcat/webapps/*" >> dockerfile
     - echo "COPY $PACKAGE_NAME /usr/local/tomcat/webapps" >> dockerfile
     # run common deploy shell
