@@ -1,4 +1,11 @@
 # gitlab_rancher_auto_deploy
 ##简介
-本项目主要讲述如何使用gitlab和rancher搭建一个代码提交，自动或者一键部署项目的平台。
+用搭建一个基于gitlab代码版本,自动在rancher上用docker部署应用的平台。
+
+使用的相关软件与技术:
++ gitlab
++ gitlab runner
++ docker registry
+##Step1 搭建gitlab
+
 
