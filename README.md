@@ -18,3 +18,6 @@ PS：runner可与gitlab机器不同，但网络要互通。
 + 安装参考官方文档：
 [https://docs.gitlab.com/runner/install/linux-manually.html](https://docs.gitlab.com/runner/install/linux-manually.html)
 + 安装后可在gitlab用机器root账号登录访问http://192.168.33.226/admin/runners 查看runner信息。
+
+##Step3 项目根目录添加.gitlab-ci.yml文件
++ 本项目有maven+jre8+jar/maven+tomcat+jre8+war/nodejs的.yml文件模板，可参考使用。
