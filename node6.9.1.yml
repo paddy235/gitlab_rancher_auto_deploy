@@ -25,9 +25,10 @@ deploy_dev:
     - npm install
     # write docker file
     - echo "FROM node:6.9.1" > dockerfile
+    - echo "WORKDIR /opt" >> dockerfile
     - echo "COPY ./ /opt" >> dockerfile
     - echo "RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime" >> dockerfile
-    - echo "CMD [\"node\",\"/opt/$START_JS\"]" >> dockerfile
+    - echo "CMD [\"node\",\"$START_JS\"]" >> dockerfile
     # run common deploy shell
     - sh /opt/deploy-shell/deploy-common-dev.sh
 
@@ -56,9 +57,10 @@ deploy_prd:
     - npm install
     # write docker file
     - echo "FROM node:6.9.1" > dockerfile
+    - echo "WORKDIR /opt" >> dockerfile
     - echo "COPY ./ /opt" >> dockerfile
     - echo "RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime" >> dockerfile
-    - echo "CMD [\"node\",\"/opt/$START_JS\"]" >> dockerfile
+    - echo "CMD [\"node\",\"$START_JS\"]" >> dockerfile
     # run common deploy shell
     - sh /opt/deploy-shell/deploy-common-prd.sh
 
