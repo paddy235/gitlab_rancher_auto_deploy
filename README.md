@@ -13,3 +13,8 @@ PS：gitlab消耗内存，推荐分配2GB以上内存使用，否则页面卡。
 + 安装后到gitlab的bin目录执行sudo gitlab-ctl reconfigure启动
 + 启动后直接访问80端口即可看到gitlab注册页——注册账号——新建项目——上传代码
 
+##Step2 安装gitlab runner
+PS：runner可与gitlab机器不同，但网络要互通。
++ 安装参考官方文档：
+[https://docs.gitlab.com/runner/install/linux-manually.html](https://docs.gitlab.com/runner/install/linux-manually.html)
++ 安装后可在gitlab用机器root账号登录访问http://192.168.33.226/admin/runners 查看runner信息。
