@@ -27,6 +27,9 @@ ExecStart=/usr/bin/dockerd **--insecure-registry 192.168.33.211:5000**（本样�
 
 ##Step4 安装rancher
 
+##Step5 下载rancher compose
 
-##Step10 项目根目录添加.gitlab-ci.yml文件
+##Step6 gitlab runner 服务器配置环境变量
+
+##Step7 项目根目录添加.gitlab-ci.yml文件
 + 本项目有maven+jre8+jar/maven+tomcat+jre8+war/nodejs的.yml文件模板，可参考使用。
