@@ -1,10 +1,11 @@
 # gitlab_rancher_auto_deploy
 ##简介
 用搭建一个基于gitlab代码版本,自动在rancher上用docker部署应用的平台。
-
 >以下均使用centos7虚拟机搭建，虚拟机之间为局域网，网络互通。
+
 ##Step1 搭建gitlab ce
 >gitlab消耗内存，推荐分配2GB以上内存使用，否则页面卡。
+
 + 下载安装可参考[官方文档](https://about.gitlab.com/downloads/#centos7)
 + 官方文档底部有针对国内用户的[清华镜像地址](https://mirror.tuna.tsinghua.edu.cn/help/gitlab-ce/)
 + 安装完成后，修改/etc/gitlab/gitlab.rb文件，修改``external_url 'http://192.168.33.226'`` (本样例gitlab安装于192.168.33.226）此地址为git路径的域名，默认为localhost
@@ -13,6 +14,7 @@
 
 ##Step2 安装gitlab runner
 >runner可与gitlab机器不同,内存推荐至少1GB，硬盘多分配以防项目过多导致磁盘满。
+
 + 安装参考[官方文档](https://docs.gitlab.com/runner/install/linux-manually.html)
 + 本样例registry时采用shell，若想使用docker需自建环境镜像。
 + 安装后可在gitlab用机器root账号登录访问http://192.168.33.226/admin/runners 查看runner信息。(本样例runner安装于192.168.33.225)
