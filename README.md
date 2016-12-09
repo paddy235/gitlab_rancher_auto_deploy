@@ -42,7 +42,7 @@
 
 ##Step6 gitlab runner 服务器配置环境变量
 + 在gitlab runner机器上修改/etc/profile文件，在最后添加：
-    ```shell
+    ```
     export RANCHER_URL=http://192.168.33.221:8080/
     export RANCHER_ACCESS_KEY=8FFBE33462AE5F245A5F
     export RANCHER_SECRET_KEY=MpXXvnLKamrv8uhfkBz7KNbFx1axdNv3EncXsZG9
