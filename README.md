@@ -18,7 +18,7 @@ PS：runner可与gitlab机器不同,内存推荐至少1GB，硬盘多分配以�
 + 安装后可在gitlab用机器root账号登录访问http://192.168.33.226/admin/runners 查看runner信息。(本样例runner安装于192.168.33.225)
 
 ##Step3 搭建docker registry私有镜像库
-+ docker registry 为docker镜像，需先安装docker,参考[官方文档](https://docs.docker.com/engine/installation/linux/centos/)
++ 安装docker registry，需先安装docker,参考[官方文档](https://docs.docker.com/engine/installation/linux/centos/)
 由于docker官方镜像库docker hub网络原因，推荐国内用户使用[daocloud镜像加速器](https://www.daocloud.io/mirror.html)
 + docker registry安装参考[官方文档](https://docs.docker.com/registry/)
 + 由于docker registry 拉取镜像时只支持https地址，需在拉取镜像服务器修改/usr/lib/systemd/system/docker.service文件
@@ -26,10 +26,36 @@ ExecStart=/usr/bin/dockerd **--insecure-registry 192.168.33.211:5000**（本样�
 添加后执行systemctl daemon-reload重启docker，即可忽略拉取镜像时https报错。
 
 ##Step4 安装rancher
++ 先安装docker，参考step3，后执行docker run -d --restart=unless-stopped -p 8080:8080 rancher/server即可
++ 访问8080端口可直接进入控制页面，右下角可切换语言
++ 基础架构-主机-添加主机，将用于部署的应用机器加入到rancher内管理。（注意执行脚本前关闭防火墙，时间同步）
++ 将一台或者多台机器添加标签lb=true，充当服务访问入口（对应up-lb脚本内的调度规则，也可自定义修改）
++ 系统管理-高可用，按照说明配置可将rancher落地到数据库
++ API，添加环境API，将弹出的key和秘钥存储，后续rancher compose需要用到。
 
 ##Step5 下载rancher compose
++ 根据step4上安装的docker版本（控制台左下角点击版本号，查看Rancher Compose版本）
++ 访问[官方文档](https://github.com/rancher/rancher-compose/releases)找到对应版本的rancher compose下载
++ 将下载的rancher compose脚本放在gitlab runner机器的/opt/rancher-compose/目录下（自定义需修改项目deploy-common-***.sh文件）
 
 ##Step6 gitlab runner 服务器配置环境变量
++ 在gitlab runner机器上修改/etc/profile文件，在最后添加：
+export RANCHER_URL=http://192.168.33.221:8080/
+export RANCHER_ACCESS_KEY=8FFBE33462AE5F245A5F
+export RANCHER_SECRET_KEY=MpXXvnLKamrv8uhfkBz7KNbFx1axdNv3EncXsZG9
+export DOCKER_REGISTRY_DEV=192.168.33.211:5000
+export DOCKER_REGISTRY_PRD=***.***.***.***:5000
+说明：RANCHER_URL为rancher地址；RANCHER_ACCESS_KEY,RANCHER_SECRET_KEY为step4中的API环境秘钥；DOCKER_REGISTRY_DEV为私有镜像库地址，dev为开发环境，prd为生产环境，分别对应不同脚本。
++ 执行脚本mkdir /opt/rancher-compose/lb创建文件夹，用于存储不同项目lb的compose文件
++ 将项目内的deploy-common-***.sh,up-lb-***.sh四个文件放在/opt/deploy-shell文件夹下
 
 ##Step7 项目根目录添加.gitlab-ci.yml文件
-+ 本项目有maven+jre8+jar/maven+tomcat+jre8+war/nodejs的.yml文件模板，可参考使用。
++ 本项目有maven+jre8+jar；maven+tomcat+jre8+war；nodejs的.yml文件模板，可参考使用。
++ 提交项目代码到gitlab，目前定义master分支为prd环境，执行prd脚本以及上传到prd私有镜像库。test分支为dev环境，执行dev脚本，使用dev镜像库
++ 登录gitlab，进入项目页面-Pipelines可以看到每次提交版本的记录，进入点击deploy自动部署，up_lb为启动/重启负载均衡。
++ Environment标签内有dev prd两个环境的部署记录，可以点击Rollback按钮自动回滚。
+
+#最后的一些说明
++ rancher环境还可新增一套环境，主机不同即可
++ gitlab runner可启动多个，并发执行多个项目部署
++ docker registry 推荐在不同环境分别部署。
