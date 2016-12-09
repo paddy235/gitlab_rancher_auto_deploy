@@ -50,7 +50,10 @@
     export DOCKER_REGISTRY_DEV=192.168.33.211:5000
     export DOCKER_REGISTRY_PRD=***.***.***.***:5000
   ```
-  >RANCHER_URL为rancher地址；RANCHER_ACCESS_KEY,RANCHER_SECRET_KEY为step4中的API环境秘钥；DOCKER_REGISTRY_DEV为私有镜像库地址，dev为开发环境，prd为生产环境，分别对应不同脚本。
+  >RANCHER_URL为rancher地址
+  >RANCHER_ACCESS_KEY,RANCHER_SECRET_KEY为step4中的API环境秘钥
+  >DOCKER_REGISTRY_DEV为私有镜像库地址，dev为开发环境，prd为生产环境，分别对应不同脚本。
+  
 + 执行脚本mkdir /opt/rancher-compose/lb创建文件夹，用于存储不同项目lb的compose文件
 + 将项目内的deploy-common-***.sh,up-lb-***.sh四个文件放在/opt/deploy-shell文件夹下
 
