@@ -1,0 +1,35 @@
+stages:
+  - deploy
+
+#dev environment
+deploy_dev:
+  stage: deploy
+  only:
+    - test
+  environment:
+    name: dev
+  when: manual
+  script:
+    # clean and install node modules
+    - rm -rf node_modules/
+    - npm install
+    - npm run build
+    # scp html to nginx
+    - scp -r ./dist/* root@192.168.33.213:/usr/share/nginx/html
+
+
+#prd environment
+deploy_prd:
+  stage: deploy
+  only:
+    - master
+  environment:
+    name: prd
+  when: manual
+  script:
+    # clean and install node modules
+    - rm -rf node_modules/
+    - npm install
+    - npm run build
+    # scp html to nginx
+    - scp -r ./dist/* root@192.168.33.213:/usr/share/nginx/html
