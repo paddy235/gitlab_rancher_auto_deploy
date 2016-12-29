@@ -4,7 +4,7 @@ variables:
   #包路径(相对于项目根目录,以/开头)
   PACKAGE_PATH: "/target"
   #启动服务的容器数量
-  CONTAINER_SCALE: "1"
+  CONTAINER_SCALE: "2"
   #LB开放端口号（LB数量和ip根据rancher已定死，不可配置）
   EXPORT_LB_PORT: "8001"
   #容器侧访问端口号
@@ -27,11 +27,11 @@ deploy_dev:
     # write docker file
     - cd /$CI_PROJECT_DIR/$PACKAGE_PATH
     - echo "FROM openjdk:8-jre" > dockerfile
-    - echo "COPY $PACKAGE_NAME /opt" >> dockerfile
     - echo "RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime" >> dockerfile
+    - echo "COPY $PACKAGE_NAME /opt" >> dockerfile
     - echo "CMD [\"java\",\"-Dfile.encoding=UTF-8\",\"-Duser.timezone=Asia/Shanghai\",\"-jar\",\"/opt/$PACKAGE_NAME\"]" >> dockerfile
     # run common deploy shell
-    - sh /opt/deploy-shell/deploy-common-dev.sh
+    - sh /home/gitlab-runner/deploy-shell/deploy-common-dev.sh
 
 up_lb_dev:
   stage: up_lb
@@ -41,7 +41,7 @@ up_lb_dev:
     name: dev
   when: manual
   script:
-    - sh /opt/deploy-shell/up-lb-dev.sh
+    - sh /home/gitlab-runner/deploy-shell/up-lb-dev.sh
 
 #prd environment
 deploy_prd:
@@ -57,11 +57,11 @@ deploy_prd:
     # build docker image
     - cd /$CI_PROJECT_DIR/$PACKAGE_PATH
     - echo "FROM openjdk:8-jre" > dockerfile
-    - echo "COPY $PACKAGE_NAME /opt" >> dockerfile
     - echo "RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime" >> dockerfile
+    - echo "COPY $PACKAGE_NAME /opt" >> dockerfile
     - echo "CMD [\"java\",\"-Dfile.encoding=UTF-8\",\"-Duser.timezone=Asia/Shanghai\",\"-jar\",\"/opt/$PACKAGE_NAME\"]" >> dockerfile
     # run common deploy shell
-    - sh /opt/deploy-shell/deploy-common-prd.sh
+    - sh /home/gitlab-runner/deploy-shell/deploy-common-prd.sh
 
 up_lb_prd:
   stage: up_lb
@@ -71,4 +71,4 @@ up_lb_prd:
     name: prd
   when: manual
   script:
-    - sh /opt/deploy-shell/up-lb-prd.sh
+    - sh /home/gitlab-runner/deploy-shell/up-lb-prd.sh
