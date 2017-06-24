@@ -1,12 +1,15 @@
-# gitlab_rancher_auto_deploy
+# gitlab-ci + rancher
 
 ## 简介
-用搭建一个基于gitlab代码版本,自动在rancher上用docker部署应用的平台。
+> 搭建一个基于gitlab-ci,一键在rancher上部署基于容器的应用的持续集成平台。
 
+## 关于应用架构的一些说明
+> 由于应用较少且都是微服务，所以使用的是rancher默认的cattle容器编排策略，依赖cattle自己建立的容器间相互通信，容器外隔离的网络机制。
+
+## 搭建步骤
 > 以下均使用centos7虚拟机搭建，虚拟机之间为局域网，网络互通。
 
-## Step1 搭建gitlab ce
-
+### Step1 搭建gitlab ce
 > gitlab消耗内存，推荐分配2GB以上内存使用，否则页面卡。
 
 + 下载安装可参考[官方文档](https://about.gitlab.com/downloads/#centos7)
@@ -15,15 +18,14 @@
 + 安装后到gitlab的bin目录执行``sudo gitlab-ctl reconfigure``启动
 + 启动后直接访问80端口即可看到gitlab注册页——注册账号——新建项目——上传代码
 
-## Step2 安装gitlab runner
-
+### Step2 安装gitlab runner
 > runner可与gitlab机器不同,内存推荐至少1GB，硬盘多分配以防项目过多导致磁盘满。
 
 + 安装参考[官方文档](https://docs.gitlab.com/runner/install/linux-manually.html)
 + 本样例registry时采用shell，若想使用docker需自建环境镜像。
 + 安装后可在gitlab用机器root账号登录访问http://192.168.33.226/admin/runners 查看runner信息。(本样例runner安装于192.168.33.225)
 
-## Step3 搭建docker registry私有镜像库
+### Step3 搭建docker registry私有镜像库
 
 + 安装docker registry，需先安装docker,参考[官方文档](https://docs.docker.com/engine/installation/linux/centos/)
 由于docker官方镜像库docker hub网络原因，推荐国内用户使用[daocloud镜像加速器](https://www.daocloud.io/mirror.html)
@@ -32,7 +34,7 @@
 ``ExecStart=/usr/bin/dockerd --insecure-registry 192.168.33.211:5000``（本样例私有镜像库安装在192.168.33.211）
 + 添加后执行``systemctl daemon-reload``重启docker，即可忽略拉取镜像时https报错。
 
-## Step4 安装rancher
+### Step4 安装rancher及新建主机
 
 + 先安装docker，参考step3，后执行``docker run -d --restart=unless-stopped -p 8080:8080 rancher/server``即可
 + 访问8080端口可直接进入控制页面，右下角可切换语言
@@ -41,15 +43,15 @@
 + 系统管理-高可用，按照说明配置可将rancher落地到数据库
 + API，添加环境API，将弹出的key和秘钥存储，后续rancher compose需要用到。
 
-## Step5 下载rancher compose
+### Step5 下载rancher compose
 
 + 根据step4上安装的docker版本（控制台左下角点击版本号，查看Rancher Compose版本）
 + 访问[官方文档](https://github.com/rancher/rancher-compose/releases)找到对应版本的rancher compose下载
-+ 将下载的rancher compose脚本放在gitlab runner机器的/opt/rancher-compose/目录下（自定义需修改项目deploy-common-***.sh文件）
++ 将下载的rancher compose脚本放在gitlab runner机器的任意目录下（样例放在/opt/rancher-compose/，脚本在启动容器的时候会用到）
 
-## Step6 gitlab runner 服务器配置环境变量
+### Step6 gitlab runner 服务器配置环境变量
 
-+ 在gitlab runner机器上修改/etc/profile文件，在最后添加：
++ 在gitlab runner机器上修改/etc/profile文件，添加一些全局的变量，给执行脚本使用，便于修改，以下为样例
 
   ```
     export RANCHER_URL=http://192.168.33.221:8080/
@@ -58,25 +60,66 @@
     export DOCKER_REGISTRY_DEV=192.168.33.211:5000
     export DOCKER_REGISTRY_PRD=***.***.***.***:5000
   ```
-  
   > RANCHER_URL为rancher地址
-  
-  > RANCHER_ACCESS_KEY,RANCHER_SECRET_KEY为step4中的API环境秘钥
-  
+  > RANCHER_ACCESS_KEY,RANCHER_SECRET_KEY为step4中的API环境秘钥 
   > DOCKER_REGISTRY_DEV为私有镜像库地址，dev为开发环境，prd为生产环境，分别对应不同脚本。
-  
-+ 执行脚本mkdir /opt/rancher-compose/lb创建文件夹，用于存储不同项目lb的compose文件
-+ 将项目内的deploy-common-***.sh,up-lb-***.sh四个文件放在/opt/deploy-shell文件夹下
 
-## Step7 项目根目录添加.gitlab-ci.yml文件
 
-+ 本项目有maven+jre8+jar；maven+tomcat+jre8+war；nodejs的.yml文件模板，可参考使用。
+### Step7 项目根目录添加.gitlab-ci.yml文件
+
++ 在应用项目代码根目录新建.gitlab-ci.yml，具体语法参考[官方文档](https://docs.gitlab.com/ee/ci/yaml/README.html),以下为样例
+
+```
+variables:
+  #包名
+  PACKAGE_NAME: "cart-service.jar"
+  #包路径(相对于项目根目录,以/开头)
+  PACKAGE_PATH: "/target"
+  #启动服务的容器数量
+  CONTAINER_SCALE: "2"
+  #容器内部访问端口号
+  CONTAINER_PORT: "8080"
+  #健康监测地址(相对路径,以/开头)
+  HEALTH_CHECK_URL: "/cart-service/cart/status"
+stages:
+  - deploy
+
+#dev environment
+deploy_dev:
+  stage: deploy
+  only:
+    - test
+  environment:
+    name: dev
+  when: manual
+  script:
+    # package
+    - mvn clean package -Dmaven.test.skip=true
+    # run common deploy shell
+    - sh /home/gitlab-runner/deploy-shell-2.0/biz/dev.sh
+
+#prd environment
+deploy_prd_jf:
+  stage: deploy
+  only:
+    - prd-jf
+  environment:
+    name: prd-jf
+  when: manual
+  script:
+    # package
+    - mvn clean package -Dmaven.test.skip=true
+    # run common deploy shell
+    - sh /home/gitlab-runner/deploy-shell-2.0/biz/prd-jf.sh
+```
+
 + 提交项目代码到gitlab，目前定义master分支为prd环境，执行prd脚本以及上传到prd私有镜像库。test分支为dev环境，执行dev脚本，使用dev镜像库
-+ 登录gitlab，进入项目页面-Pipelines可以看到每次提交版本的记录，进入点击deploy自动部署，up_lb为启动/重启负载均衡。
-+ Environment标签内有dev prd两个环境的部署记录，可以点击Rollback按钮自动回滚。
++ 登录gitlab，进入项目页面-Pipelines可以看到每次提交版本的记录，进入点击deploy自动部署。
++ Environment标签内有dev prd两个环境的部署记录，可以点击Rollback按钮自动回滚,也可以点击相应git版本的代码再次发布达到回滚效果。
 
 # 最后的一些说明
 
 + rancher环境还可新增一套环境，主机不同即可
 + gitlab runner可启动多个，并发执行多个项目部署
 + docker registry 推荐在不同环境分别部署。
++ 有不懂的可以联系QQ793271105
