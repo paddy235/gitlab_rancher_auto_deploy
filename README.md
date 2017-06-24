@@ -5,6 +5,8 @@
 
 ## 关于应用架构的一些说明
 > 由于应用较少且都是微服务，所以使用的是rancher默认的cattle容器编排策略，依赖cattle自己建立的容器间相互通信，容器外隔离的网络机制。
+> rancher自带dns可以实现带负载均衡的服务间的相互调用，而且重建容器不受影响
+> rancher里有一些社区封装好的catalog，点击即用，非常实用，例如kafka，elasticsearch,influxdb,prometheus等。
 
 ## 搭建步骤
 > 以下均使用centos7虚拟机搭建，虚拟机之间为局域网，网络互通。
